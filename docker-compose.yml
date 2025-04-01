@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  auth:
+    build: 
+      context: ./auth-service
+    ports:
+      - "3000:3000"
+    environment:
+      DB_HOST: host.docker.internal  # Специальное имя для доступа к localhost
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: ""
+      DB_NAME: gymdb
+
+  visits:
+    build:
+      context: ./visits-service
+    ports:
+      - "3001:3001"
+    environment:
+      DB_HOST: host.docker.internal
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: ""
+      DB_NAME: gymdb
