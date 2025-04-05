@@ -7,15 +7,20 @@ import { GymVisit } from './gym-visit.entity';
 export class VisitsRepository {
   constructor(
     @InjectRepository(GymVisit)
-    private visitsRepository: Repository<GymVisit>,
+    private readonly repo: Repository<GymVisit>,
   ) {}
 
-  async createVisit(visitData: Partial<GymVisit>): Promise<GymVisit> {
-    const visit = this.visitsRepository.create(visitData);
-    return this.visitsRepository.save(visit);
+  async create(data: Omit<GymVisit, 'id'>): Promise<GymVisit> {
+    const visit = this.repo.create(data);
+    
+    return this.repo.save(visit);
   }
 
-  async getUserVisits(userId: string): Promise<GymVisit[]> {
-    return this.visitsRepository.find({ where: { userId } });
+  async findByUserId(userId: string): Promise<GymVisit[]> {
+    return this.repo.find({ where: { userId }, order: { date: 'DESC' } });
+  }
+
+  async delete(id: string, userId: string): Promise<void> {
+    await this.repo.delete({ id, userId });
   }
 }
