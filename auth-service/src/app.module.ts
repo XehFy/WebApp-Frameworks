@@ -6,6 +6,8 @@ import { AppService } from './app.service';
 import { User } from './user.entity';
 import { JwtStrategy } from './jwt.strategy';
 import { ConfigModule } from '@nestjs/config';
+import { MiddlewareConsumer, NestModule } from '@nestjs/common';
+import { LoggingMiddleware } from './logging.middleware';
 
 @Module({
   imports: [
@@ -33,4 +35,10 @@ import { ConfigModule } from '@nestjs/config';
   controllers: [AppController],
   providers: [AppService, JwtStrategy],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(LoggingMiddleware)
+      .forRoutes('*'); // Для всех роутов
+  }
+}

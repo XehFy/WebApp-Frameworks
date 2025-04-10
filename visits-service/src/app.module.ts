@@ -9,6 +9,7 @@ import { JwtStrategy } from './auth/jwt.strategy';
 import { VisitsRepository } from './visits.repository';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { JwtLoggerInterceptor } from './jwt-logger.interceptor';
+import { LoggingMiddleware } from './logging.middleware';
 
 @Module({
   imports: [
@@ -60,17 +61,7 @@ import { JwtLoggerInterceptor } from './jwt-logger.interceptor';
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
-      .apply((req, res, next) => {
-        const authHeader = req.headers['authorization'];
-        if (authHeader) {
-          const token = authHeader.replace('Bearer ', '');
-          console.log('\n===== JWT DEBUG =====');
-          console.log('Incoming Token:', token);
-          console.log('Used JWT Secret Length:', process.env.JWT_SECRET?.length);
-          console.log('Current Server Time:', new Date().toISOString());
-        }
-        next();
-      })
-      .forRoutes('*');
-  }
+    .apply(LoggingMiddleware)
+    .forRoutes('*'); // Для всех роутов
+    }
 }

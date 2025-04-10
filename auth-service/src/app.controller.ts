@@ -21,7 +21,7 @@ export class AppController {
   @Post('login')
   @ApiOperation({ summary: 'User login' })
   @ApiBody({ type: LoginDto })
-  @ApiResponse({ status: 200, description: 'JWT token' })
+  @ApiResponse({ status: 200, description: 'JWT token, данные пользователя' })
   login(@Body() loginDto: LoginDto) {
     return this.appService.login(loginDto);
   }

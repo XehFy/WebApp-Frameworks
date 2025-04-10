@@ -1,26 +1,37 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect } from 'react';
+import { observer } from 'mobx-react-lite';
+import adminStore from './stores/adminStore';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload. MOBXtext
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+interface User {
+  id: string;
+  email: string;
+  role: string;
 }
 
-export default App;
+interface AdminAppProps {
+  user?: User; // Опциональный пропс
+}
+
+const AdminApp: React.FC<AdminAppProps> = observer(({ user }) => {
+  if (!user) {
+    return <div className="auth-message">Требуются права администратора</div>;
+  }
+
+  return (
+    <div style={{ border: '2px solid red', padding: 20 }}>
+      <h2>Админ-панель (MobX)</h2>
+      <p>Вы вошли как: {user?.email}</p>
+      
+      <h3>Пользователи системы:</h3>
+      <ul>
+        {adminStore.users.map((user: User) => (
+          <li key={user.id}>
+            {user.email} - {user.role}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+});
+
+export default AdminApp;

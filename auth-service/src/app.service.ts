@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -40,10 +40,18 @@ export class AppService {
     });
     
     if (!user || !(await bcrypt.compare(loginDto.password, user.password))) {
-      throw new Error('Invalid credentials');
+      throw new UnauthorizedException('Неверные учетные данные');
     }
-
-    return this.generateToken(user);
+  
+    const token = await this.generateToken(user);
+    
+    return {
+      access_token: token,
+      user: {
+        role: user.role,
+        email: user.email,
+      }
+    };
   }
 
   private generateToken(user: User) {
