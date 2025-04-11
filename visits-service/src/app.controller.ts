@@ -4,7 +4,8 @@ import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody, ApiParam } from '@nestjs/swagger';
 import { GymVisit } from './gym-visit.entity';
-
+import { VisitType } from './visit-type.enum';
+import { User } from './auth/user.entity';
 @ApiTags('Управление посещениями спортзала')
 @ApiBearerAuth()
 @Controller('visits')
@@ -16,73 +17,44 @@ export class AppController {
   @Post()
   @ApiOperation({ 
     summary: 'Создать новое посещение',
-    description: 'Добавляет запись о посещении спортзала для текущего пользователя'
+    description: 'Добавляет запись о посещении спортзала для текущего пользователя (групповое или индивидуальное)'
   })
   @ApiBody({
     schema: {
       type: 'object',
-      required: ['date', 'duration'],
+      required: ['date', 'duration', 'type'],
       properties: {
-        date: {
+        date: { type: 'string', format: 'date-time' },
+        duration: { type: 'number' },
+        type: {
           type: 'string',
-          format: 'date-time',
-          example: '2025-04-02T14:00:00Z',
-          description: 'Дата и время посещения в формате ISO'
-        },
-        duration: {
-          type: 'number',
-          example: 90,
-          description: 'Продолжительность посещения в минутах'
+          enum: ['GROUP', 'INDIVIDUAL'],
+          description: 'Тип посещения'
         }
       },
-      examples: {
-        стандартное: {
-          summary: 'Стандартное посещение',
-          value: {
-            date: '2025-04-02T14:00:00Z',
-            duration: 90
-          }
-        },
-        короткое: {
-          summary: 'Короткое посещение',
-          value: {
-            date: '2025-04-01T09:30:00Z',
-            duration: 30
-          }
-        }
-      }
-    }
-  })
-  @ApiResponse({ 
-    status: 201, 
-    description: 'Посещение успешно создано',
-    schema: {
       example: {
-        id: '550e8400-e29b-41d4-a716-446655440000',
-        userId: '45953a8d-47e6-4a18-880d-3a6f370077f4',
         date: '2025-04-02T14:00:00Z',
-        duration: 90
+        duration: 90,
+        type: 'GROUP'
       }
     }
-  })
-  @ApiResponse({ 
-    status: 400, 
-    description: 'Ошибка валидации: неверный формат даты или продолжительности' 
-  })
-  @ApiResponse({ 
-    status: 401, 
-    description: 'Требуется авторизация: неверный или отсутствующий токен' 
   })
   async createVisit(
     @Req() req: Request,
-    @Body() visitData: { date: string; duration: number }
+    @Body() visitData: { date: string; duration: number; type: VisitType }
   ) {
+    const userId = (req.user as { userId: string }).userId;
+  
     const visit: Omit<GymVisit, 'id' | 'userId'> = {
       date: new Date(visitData.date),
-      duration: visitData.duration
+      duration: visitData.duration,
+      type: visitData.type,
+      users: [{ id: userId } as User], // <-- добавили пользователя
     };
-    return this.service.create((req.user as { userId: string }).userId, visit);
+  
+    return this.service.create(userId, visit);
   }
+  
 
   /* ========== ОТЛАДОЧНЫЙ ЭНДПОИНТ ========== */
   @Get('debug-request')

@@ -10,6 +10,7 @@ import { VisitsRepository } from './visits.repository';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { JwtLoggerInterceptor } from './jwt-logger.interceptor';
 import { LoggingMiddleware } from './logging.middleware';
+import { User } from './auth/user.entity';
 
 @Module({
   imports: [
@@ -29,7 +30,7 @@ import { LoggingMiddleware } from './logging.middleware';
         username: config.get('DB_USER'),
         password: config.get('DB_PASSWORD'),
         database: config.get('DB_NAME'),
-        entities: [GymVisit],
+        entities: [GymVisit, User],
         synchronize: true,
       }),
       inject: [ConfigService],
@@ -44,7 +45,7 @@ import { LoggingMiddleware } from './logging.middleware';
       }),
       inject: [ConfigService],
     }),
-    TypeOrmModule.forFeature([GymVisit]),
+    TypeOrmModule.forFeature([GymVisit, User]),
   ],
   controllers: [AppController],
   providers: [

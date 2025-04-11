@@ -1,7 +1,7 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 interface LoginResponse {
-  token: string;
+  access_token: string;
   user: {
     role: 'client' | 'admin';
     email?: string;

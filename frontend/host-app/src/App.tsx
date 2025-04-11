@@ -4,15 +4,14 @@ import { store } from './store';
 import AuthForm from './components/AuthForm';
 import './App.css';
 
-// Создаем интерфейс для пропсов микрофронтендов
 interface MicroFrontendProps {
   user: {
     role: 'client' | 'admin';
     email?: string;
   };
+  token?: string;
 }
 
-// Явно указываем типы для динамических импортов
 const RemoteRTKApp = lazy(() => import('rtkApp/App') as Promise<{
   default: React.ComponentType<MicroFrontendProps>;
 }>);
@@ -23,28 +22,39 @@ const RemoteMobXApp = lazy(() => import('mobxApp/App') as Promise<{
 
 const App: React.FC = () => {
   const [user, setUser] = useState<MicroFrontendProps['user'] | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setUser(null);
+    setToken(null);
+  };
 
   return (
     <Provider store={store}>
       <div className="App">
         {user && (
-          <button onClick={() => {
-            localStorage.removeItem('token');
-            setUser(null);
-          }} className="logout-button">
+          <button onClick={handleLogout} className="logout-button">
             Выйти
           </button>
         )}
-        
+
         {!user ? (
-          <AuthForm onSuccess={setUser} />
+          <AuthForm
+            onSuccess={({ token, ...userData }) => {
+              setUser(userData);
+              setToken(token);
+              localStorage.setItem('token', token);
+              console.log('✅ onSuccess: user и token переданы напрямую:', userData, token);
+            }}
+          />
         ) : user.role === 'client' ? (
           <Suspense fallback={<div className="loading">Загрузка клиентского кабинета...</div>}>
-            <RemoteRTKApp user={user} />
+            <RemoteRTKApp user={user} token={token || ''} />
           </Suspense>
         ) : (
           <Suspense fallback={<div className="loading">Загрузка админ-панели...</div>}>
-            <RemoteMobXApp user={user} />
+            <RemoteMobXApp user={user} token={token || ''} />
           </Suspense>
         )}
       </div>

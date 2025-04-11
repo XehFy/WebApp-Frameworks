@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useLoginMutation, useRegisterMutation } from '../services/authApi';
 
 interface AuthFormProps {
-  onSuccess: (userData: { role: 'client' | 'admin' }) => void;
+  onSuccess: (data: { role: 'client' | 'admin'; email?: string; token: string }) => void;
 }
 
 const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
@@ -21,9 +21,9 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
     try {
       const result = await (isLogin ? login : register)(credentials).unwrap();
       console.log('Успешный ответ от API:', result);
-      localStorage.setItem('token', result.token);
-      console.log('Токен сохранён в localStorage');
-      onSuccess(result.user);
+      localStorage.setItem('token', result.access_token);
+      console.log('Токен сохранён в localStorage', result.access_token);
+      onSuccess({ ...result.user, token: result.access_token }); // ← теперь передаём токен напрямую
       console.log('Вызван onSuccess с данными:', result.user);
     } catch (error) {
       alert(isLogin ? 'Ошибка входа' : 'Ошибка регистрации');
