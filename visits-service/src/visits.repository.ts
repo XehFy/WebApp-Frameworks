@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOneOptions, Repository } from 'typeorm';
 import { GymVisit } from './gym-visit.entity';
 
 @Injectable()
@@ -22,5 +22,12 @@ export class VisitsRepository {
 
   async delete(id: string, userId: string): Promise<void> {
     await this.repo.delete({ id, userId });
+  }
+  async findOne(options: FindOneOptions<GymVisit>): Promise<GymVisit | null> {
+    return this.repo.findOne(options);
+  }
+
+  async save(visit: GymVisit): Promise<GymVisit> {
+    return this.repo.save(visit);
   }
 }

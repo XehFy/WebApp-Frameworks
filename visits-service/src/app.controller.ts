@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Delete, Body, Param, UseGuards, Req } from '@nestjs/common';
+import { Controller, Post, Get, Delete, Body, Param, UseGuards, Req, ForbiddenException, Patch } from '@nestjs/common';
 import { AppService } from './app.service';
 import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
@@ -143,4 +143,79 @@ export class AppController {
   ) {
     return this.service.delete((req.user as { userId: string }).userId, visitId);
   }
+  @Get('/admin/users/:id/visits')
+@ApiOperation({ summary: 'Получить все посещения по ID пользователя (только для админа)' })
+@ApiParam({ name: 'id', description: 'UUID пользователя' })
+async getVisitsForUser(@Req() req: Request, @Param('id') userId: string) {
+  const user = req.user as any;
+  if (user.role !== 'admin') {
+    throw new ForbiddenException('Access denied');
+  }
+  return this.service.getByUser(userId);
+}
+@Post('/admin/users/:id/visits')
+@ApiOperation({ summary: 'Создать посещение для пользователя по ID (только для админа)' })
+@ApiParam({ name: 'id', description: 'UUID пользователя' })
+@ApiBody({
+  schema: {
+    type: 'object',
+    required: ['date', 'duration', 'type'],
+    properties: {
+      date: { type: 'string', format: 'date-time' },
+      duration: { type: 'number' },
+      type: { type: 'string', enum: ['GROUP', 'INDIVIDUAL'] }
+    },
+    example: {
+      date: '2025-04-11T10:00:00Z',
+      duration: 60,
+      type: 'GROUP'
+    }
+  }
+})
+async createVisitForUser(
+  @Req() req: Request,
+  @Param('id') userId: string,
+  @Body() visitData: { date: string; duration: number; type: VisitType }
+) {
+  const user = req.user as any;
+  if (user.role !== 'admin') {
+    throw new ForbiddenException('Access denied');
+  }
+
+  const visit: Omit<GymVisit, 'id' | 'userId'> = {
+    date: new Date(visitData.date),
+    duration: visitData.duration,
+    type: visitData.type,
+    users: [{ id: userId } as User],
+  };
+
+  return this.service.create(userId, visit);
+}
+@Patch(':id')
+@ApiOperation({ summary: 'Обновить посещение по ID (для админа и владельца)' })
+@ApiParam({ name: 'id', description: 'UUID посещения' })
+@ApiBody({
+  schema: {
+    type: 'object',
+    properties: {
+      date: { type: 'string', format: 'date-time' },
+      duration: { type: 'number' },
+      type: { type: 'string', enum: ['GROUP', 'INDIVIDUAL'] }
+    },
+    example: {
+      date: '2025-04-12T15:00:00Z',
+      duration: 75,
+      type: 'INDIVIDUAL'
+    }
+  }
+})
+async updateVisit(
+  @Req() req: Request,
+  @Param('id') visitId: string,
+  @Body() updates: { date?: string; duration?: number; type?: VisitType }
+) {
+  return this.service.updateVisit((req.user as any), visitId, updates);
+}
+
+
 }
