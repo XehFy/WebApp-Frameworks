@@ -65,7 +65,37 @@ export class AppService {
     };
   }
 
-  getProfile() {
-    return { message: 'This is a protected route' };
+  getProfile(user: any) {
+    return {
+      email: user.email,
+      role: user.role,
+    };
   }
+
+  async getAllUsers() {
+    const users = await this.userRepository.find();
+    return users.map((u) => ({
+      id: u.id,
+      email: u.email,
+      role: u.role,
+    }));
+  }
+  async updateUser(userId: string, updates: { email?: string; role?: string }) {
+    const user = await this.userRepository.findOneBy({ id: userId });
+    if (!user) throw new Error('User not found');
+  
+    if (updates.email) {
+      user.email = updates.email;
+    }
+  
+    if (updates.role) {
+      if (updates.role !== 'client' && updates.role !== 'admin') {
+        throw new Error('Invalid role. Allowed roles: client or admin');
+      }
+      user.role = updates.role as 'client' | 'admin';
+    }
+  
+    return this.userRepository.save(user);
+  }
+  
 }
