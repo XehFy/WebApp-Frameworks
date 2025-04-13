@@ -1,4 +1,4 @@
-import React, { Suspense, useState, lazy } from 'react';
+import React, { Suspense, useState, useEffect, lazy } from 'react';
 import { Provider } from 'react-redux';
 import { store } from './store';
 import AuthForm from './components/AuthForm';
@@ -24,10 +24,28 @@ const App: React.FC = () => {
   const [user, setUser] = useState<MicroFrontendProps['user'] | null>(null);
   const [token, setToken] = useState<string | null>(null);
 
+  // Проверка на наличие токена в localStorage при монтировании компонента
+  useEffect(() => {
+    console.log('🔍 Проверяем наличие токена в localStorage...');
+    const savedToken = localStorage.getItem('token');
+    if (savedToken) {
+      console.log('✅ Токен найден в localStorage');
+      const userFromStorage = JSON.parse(localStorage.getItem('user') || '{}');
+      setUser(userFromStorage);
+      setToken(savedToken);
+      console.log('📦 Восстановленные данные пользователя:', userFromStorage);
+    } else {
+      console.log('⚠️ Токен не найден в localStorage');
+    }
+  }, []);
+
   const handleLogout = () => {
+    console.log('🔒 Пользователь выходит...');
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     setUser(null);
     setToken(null);
+    console.log('✅ Токен и данные пользователя удалены из localStorage');
   };
 
   return (
@@ -42,10 +60,12 @@ const App: React.FC = () => {
         {!user ? (
           <AuthForm
             onSuccess={({ token, ...userData }) => {
+              console.log('🔑 Авторизация успешна. Сохранение данных пользователя и токена...');
               setUser(userData);
               setToken(token);
               localStorage.setItem('token', token);
-              console.log('✅ onSuccess: user и token переданы напрямую:', userData, token);
+              localStorage.setItem('user', JSON.stringify(userData)); // Сохраняем данные пользователя
+              console.log('✅ Токен и данные пользователя сохранены в localStorage:', { token, userData });
             }}
           />
         ) : user.role === 'client' ? (
