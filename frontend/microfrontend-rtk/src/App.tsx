@@ -23,7 +23,6 @@ const App: React.FC<Props> = ({ user, token }) => {
 
     if (token) {
       if (existingToken !== token) {
-        //localStorage.setItem('token', token);
         localStorage.setItem('token', JSON.stringify(token));
         console.log('✅ Новый токен сохранён в localStorage:', token);
       } else {
