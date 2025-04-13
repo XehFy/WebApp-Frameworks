@@ -11,7 +11,7 @@ const UserEditor: React.FC<Props> = observer(({ userId, onClose }) => {
   const user = adminStore.users.find((u) => u.id === userId);
   const [email, setEmail] = useState(user?.email || '');
   const [role, setRole] = useState<'admin' | 'client'>(user?.role || 'client');
-  const [newVisitType, setNewVisitType] = useState<'individual' | 'group'>('individual');
+  const [newVisitType, setNewVisitType] = useState<'INDIVIDUAL' | 'GROUP'>('INDIVIDUAL');
   const [newVisitDate, setNewVisitDate] = useState<string>('');
   const [newVisitDuration, setNewVisitDuration] = useState<string>('');
   const [editVisitId, setEditVisitId] = useState<string | null>(null);
@@ -53,7 +53,7 @@ const UserEditor: React.FC<Props> = observer(({ userId, onClose }) => {
       alert('Пожалуйста, укажите корректные значения');
       return;
     }
-    await adminStore.editVisit(id, v.type as 'individual' | 'group', v.date, duration);
+    await adminStore.editVisit(id, v.type as 'INDIVIDUAL' | 'GROUP', v.date, duration);
     await adminStore.fetchVisits(userId);
     setEditVisitId(null);
   };
@@ -108,8 +108,8 @@ const UserEditor: React.FC<Props> = observer(({ userId, onClose }) => {
                     }
                     style={{ marginLeft: 8 }}
                   >
-                    <option value="individual">individual</option>
-                    <option value="group">group</option>
+                    <option value="INDIVIDUAL">INDIVIDUAL</option>
+                    <option value="GROUP">GROUP</option>
                   </select>
                   <input
                     type="number"
@@ -153,9 +153,9 @@ const UserEditor: React.FC<Props> = observer(({ userId, onClose }) => {
       <h4>Добавить новое посещение:</h4>
       <div>
         Тип:
-        <select value={newVisitType} onChange={(e) => setNewVisitType(e.target.value as 'individual' | 'group')}>
-          <option value="individual">individual</option>
-          <option value="group">group</option>
+        <select value={newVisitType} onChange={(e) => setNewVisitType(e.target.value as 'INDIVIDUAL' | 'GROUP')}>
+          <option value="INDIVIDUAL">INDIVIDUAL</option>
+          <option value="GROUP">GROUP</option>
         </select>
       </div>
       <div>
