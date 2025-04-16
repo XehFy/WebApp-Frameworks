@@ -31,3 +31,32 @@ services:
         max-size: '10m'
         max-file: '3'
         tag: '{{.Name}}/{{.ID}}'
+
+#####FRONTEND
+  host-app:
+    build:
+      context: ./frontend/host-app
+    ports:
+      - "4000:80"
+    networks:
+      - frontend-net
+
+  microfrontend-rtk:
+    build:
+      context: ./frontend/microfrontend-rtk
+    ports:
+      - "4001:80"
+    networks:
+      - frontend-net
+
+  microfrontend-mobx:
+    build:
+      context: ./frontend/microfrontend-mobx
+    ports:
+      - "4002:80"
+    networks:
+      - frontend-net
+
+networks:
+  frontend-net:
+    driver: bridge
